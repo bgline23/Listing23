@@ -29,7 +29,7 @@ const screenHeight = Dimensions.get("window").height;
 
 const PropertyForm = ({ navigation, route }) => {
   const [modalVisible, setModalVisible] = useState(false);
-  const { user_id, authToken } = useSelector(state => state.authenticate.authUser);
+  const { user, authToken } = useSelector(state => state.authenticate.authUser);
   const [photos, setPhotos] = useState([]);
   const [formData, setFormData] = useState({
     title: "",
@@ -38,7 +38,7 @@ const PropertyForm = ({ navigation, route }) => {
     price: "0",
     address: "",
     autoCreateListing: true,
-    // userId: authUser?.userId,
+    userId: user[0].user_id,
   });
 
   const { colors } = useContext(ThemeContext);
@@ -65,14 +65,10 @@ const PropertyForm = ({ navigation, route }) => {
 
   const onSavePress = async () => {
     try {
-      const saveResult = await axios.post(
-        `${API_URL}/property/create`,
-        { ...formData, userId: user_id },
-        {
-          timeout: 5000,
-          headers: { Authorization: "Bearer " + authToken },
-        }
-      );
+      const saveResult = await axios.post(`${API_URL}/property/create`, formData, {
+        timeout: 5000,
+        headers: { Authorization: "Bearer " + authToken },
+      });
 
       if (saveResult.data.success) {
         if (photos.length) {
