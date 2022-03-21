@@ -21,12 +21,11 @@ import { useNavigationState } from "@react-navigation/native";
 import { useSelector } from "react-redux";
 import { showToast } from "../../common/ui";
 import { screenWidth } from "../../common/values";
+import { axiosAuthInstance } from "../../common/requests";
 
 const PropertyForm = ({ navigation, route }) => {
   const [modalVisible, setModalVisible] = useState(false);
-  const { authUser, authToken } = useSelector(
-    (state) => state.authenticate.authUser
-  );
+  const { authUser, authToken } = useSelector(state => state.authenticate.authUser);
   const [photos, setPhotos] = useState([]);
   const [formData, setFormData] = useState({
     title: "",
@@ -35,22 +34,20 @@ const PropertyForm = ({ navigation, route }) => {
     price: "0",
     address: "",
     autoCreateListing: true,
-    userId: authUser?.user_id,
+    userId: authUser,
   });
 
   const { colors } = useContext(ThemeContext);
-  const navigationState = useNavigationState((state) => state);
+  const navigationState = useNavigationState(state => state);
 
   useEffect(() => {
-    const newPhoto = navigationState.routes.find(
-      (route) => route.params != null
-    );
+    const newPhoto = navigationState.routes.find(route => route.params != null);
     if (newPhoto) {
       setPhotos([...photos, newPhoto]);
     }
   }, [navigationState]);
 
-  const onMapClose = (coords) => {
+  const onMapClose = coords => {
     if (coords) {
       setFormData({
         ...formData,
@@ -64,24 +61,14 @@ const PropertyForm = ({ navigation, route }) => {
 
   const onSavePress = async () => {
     try {
-      const saveResult = await axios.post(
-        `${API_URL}/property/create`,
-        formData,
-        {
-          timeout: 5000,
-          headers: { Authorization: "Bearer " + authToken },
-        }
-      );
+      const saveResult = await axiosAuthInstance.post(`/property/create`, formData);
 
       if (saveResult.data.success) {
         if (photos.length) {
-          const promises = photos.map(async (photo) => {
-            const base64Promise = FileSystem.readAsStringAsync(
-              photo.params.imageUri,
-              {
-                encoding: "base64",
-              }
-            );
+          const promises = photos.map(async photo => {
+            const base64Promise = FileSystem.readAsStringAsync(photo.params.imageUri, {
+              encoding: "base64",
+            });
 
             return base64Promise;
           });
@@ -213,7 +200,7 @@ const PropertyForm = ({ navigation, route }) => {
             trackColor={{ false: "#777777", true: "#6761A8" }}
             thumbColor={formData.autoCreateListing ? "#00b4fc" : "#f4f3f4"}
             ios_backgroundColor="#3e3e3e"
-            onValueChange={(value) =>
+            onValueChange={value =>
               setFormData({ ...formData, autoCreateListing: value })
             }
             value={formData.autoCreateListing}
@@ -250,7 +237,7 @@ const TextField = ({ name, formData, setFormData, ...props }) => {
         focus == name ? { borderWidth: 2, borderColor: "#00b4fc" } : {},
       ]}
       clearButtonMode="while-editing"
-      onChangeText={(value) => setFormData({ ...formData, [name]: value })}
+      onChangeText={value => setFormData({ ...formData, [name]: value })}
       value={formData[name]}
       onFocus={() => setFocus(name)}
       onBlur={() => setFocus(false)}
