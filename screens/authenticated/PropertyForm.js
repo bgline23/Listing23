@@ -97,9 +97,7 @@ const PropertyForm = ({ navigation, route }) => {
 
   return (
     <SafeAreaView style={styles.safeView}>
-      <ScrollView
-        contentContainerStyle={{ alignItems: "center", ...styles.formContents }}
-      >
+      <ScrollView contentContainerStyle={{ alignItems: "center" }}>
         <View style={{ alignItems: "center" }}>
           <ScreenTitle text="Add Property" />
           <TextField
@@ -277,14 +275,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: "#eee",
   },
-  formContents: {
-    flex: 1,
-    // height: "100%",
-    justifyContent: "space-between",
-    alignItems: "center",
 
-    width: screenWidth - 20,
-  },
   textInput: {
     backgroundColor: "#fff",
     borderWidth: 2,
