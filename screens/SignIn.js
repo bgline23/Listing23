@@ -1,6 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Text, StyleSheet, View, Pressable, Dimensions, Modal } from "react-native";
+import {
+  Text,
+  StyleSheet,
+  View,
+  Pressable,
+  Dimensions,
+  Modal,
+} from "react-native";
 import * as LocalAuthentication from "expo-local-authentication";
 import { useNavigationState } from "@react-navigation/native";
 
@@ -12,16 +19,21 @@ import { screenWidth, screenHeight } from "../common/values";
 import TextField from "../components/TextField";
 
 const SignIn = ({ navigation }) => {
-  const [credentials, setCredentials] = useState({ username: "", password: "" });
+  const [credentials, setCredentials] = useState({
+    username: "",
+    password: "",
+  });
   const [signInOptions, setSignInOptions] = useState(false);
   const [showOptions, setShowOptions] = useState(false);
-  const { isNewUser, authToken } = useSelector(state => state.authenticate);
-  const fingerprint = useSelector(state => state.preferences.fingerprint);
-  const navigationState = useNavigationState(state => state.routes);
+  const { isNewUser, authToken } = useSelector((state) => state.authenticate);
+  const fingerprint = useSelector((state) => state.preferences.fingerprint);
+  const navigationState = useNavigationState((state) => state.routes);
   const dispatch = useDispatch();
 
   useEffect(() => {
-    const isSigningOut = navigationState.some(route => route.params?.isSigningOut);
+    const isSigningOut = navigationState.some(
+      (route) => route.params?.isSigningOut
+    );
 
     //  Check redux store for  {"fingerprint": false}
     if (fingerprint?.fingerprint && !isSigningOut) {
@@ -37,15 +49,15 @@ const SignIn = ({ navigation }) => {
     }
   };
 
-  const onSignInPress = token => {
+  const onSignInPress = (token) => {
     dispatch(signIn({ ...credentials, ...token }))
       .unwrap()
-      .then(originalPromiseResult => {
-        if (originalPromiseResult.user) {
+      .then((originalPromiseResult) => {
+        if (originalPromiseResult.username) {
           navigation.replace("Landing");
         }
       })
-      .catch(error => {
+      .catch((error) => {
         showToast(error.message);
       });
   };
@@ -80,7 +92,10 @@ const SignIn = ({ navigation }) => {
           <Text style={styles.signInButtonText}>Sign In</Text>
         </Pressable>
         {!isNewUser && (
-          <Text onPress={() => setShowOptions(true)} style={styles.signInOptions}>
+          <Text
+            onPress={() => setShowOptions(true)}
+            style={styles.signInOptions}
+          >
             Sign In options.
           </Text>
         )}
@@ -103,7 +118,7 @@ const SignIn = ({ navigation }) => {
                 },
                 styles.signInButton,
               ]}
-              onPress={_ => {
+              onPress={(_) => {
                 navigation.navigate("SignUp");
               }}
             >
@@ -116,7 +131,7 @@ const SignIn = ({ navigation }) => {
                 },
                 styles.signInButton,
               ]}
-              onPress={_ => {
+              onPress={(_) => {
                 setShowOptions(false);
                 navigation.replace("Landing");
               }}

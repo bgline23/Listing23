@@ -5,16 +5,19 @@ import axios from "axios";
 import { API_URL } from "@env";
 
 //  Check for async store user
-export const getUserState = createAsyncThunk("authUser/getUserState", async () => {
-  let currentUser = await AsyncStorage.getItem("authUser");
-  currentUser = JSON.parse(currentUser);
-  let isNewUser = await AsyncStorage.getItem("isNewUser");
-  isNewUser = isNewUser == "existing_user" ? false : true;
+export const getUserState = createAsyncThunk(
+  "authUser/getUserState",
+  async () => {
+    let currentUser = await AsyncStorage.getItem("authUser");
+    currentUser = JSON.parse(currentUser);
+    let isNewUser = await AsyncStorage.getItem("isNewUser");
+    isNewUser = isNewUser == "existing_user" ? false : true;
 
-  let authToken = await AsyncStorage.getItem("authToken");
-  authToken = JSON.parse(authToken);
-  return { isNewUser, currentUser, authToken };
-});
+    let authToken = await AsyncStorage.getItem("authToken");
+    authToken = JSON.parse(authToken);
+    return { isNewUser, currentUser, authToken };
+  }
+);
 
 export const signIn = createAsyncThunk(
   "authUser/signIn",
@@ -33,9 +36,12 @@ export const signIn = createAsyncThunk(
           JSON.stringify({ token: signInRequest.data.token })
         );
 
-        await AsyncStorage.setItem("authUser", JSON.stringify(signInRequest.data.user));
+        await AsyncStorage.setItem(
+          "authUser",
+          JSON.stringify(signInRequest.data.user)
+        );
         await AsyncStorage.setItem("isNewUser", "existing_user");
-        return signInRequest.data;
+        return signInRequest.data.user;
       } else {
         return null;
       }
@@ -54,13 +60,16 @@ export const signIn = createAsyncThunk(
   }
 );
 
-export const signOut = createAsyncThunk("authUser/signOut", async preserveToken => {
-  await AsyncStorage.removeItem("authUser");
+export const signOut = createAsyncThunk(
+  "authUser/signOut",
+  async (preserveToken) => {
+    await AsyncStorage.removeItem("authUser");
 
-  if (!preserveToken) {
-    await AsyncStorage.removeItem("authToken");
+    if (!preserveToken) {
+      await AsyncStorage.removeItem("authToken");
+    }
   }
-});
+);
 
 export const authenticateSlice = createSlice({
   name: "authenticate",
@@ -89,7 +98,7 @@ export const authenticateSlice = createSlice({
       state.loading = "idle";
       state.error = action.error;
     },
-    [signOut.fulfilled]: state => {
+    [signOut.fulfilled]: (state) => {
       state.authUser = null;
       state.loading = false;
     },

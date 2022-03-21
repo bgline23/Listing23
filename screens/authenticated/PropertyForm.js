@@ -3,8 +3,6 @@ import { API_URL } from "@env";
 import axios from "axios";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import {
-  Button,
-  Dimensions,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -19,17 +17,16 @@ import * as FileSystem from "expo-file-system";
 import ScreenTitle from "../../components/ScreenTitle";
 import PropertyMap from "../../components/PropertyMap";
 import { ThemeContext } from "../Theme";
-import Toast from "react-native-root-toast";
 import { useNavigationState } from "@react-navigation/native";
 import { useSelector } from "react-redux";
 import { showToast } from "../../common/ui";
-
-const screenWidth = Dimensions.get("window").width;
-const screenHeight = Dimensions.get("window").height;
+import { screenWidth } from "../../common/values";
 
 const PropertyForm = ({ navigation, route }) => {
   const [modalVisible, setModalVisible] = useState(false);
-  const { user, authToken } = useSelector(state => state.authenticate.authUser);
+  const { authUser, authToken } = useSelector(
+    (state) => state.authenticate.authUser
+  );
   const [photos, setPhotos] = useState([]);
   const [formData, setFormData] = useState({
     title: "",
@@ -38,20 +35,22 @@ const PropertyForm = ({ navigation, route }) => {
     price: "0",
     address: "",
     autoCreateListing: true,
-    userId: user[0].user_id,
+    userId: authUser?.user_id,
   });
 
   const { colors } = useContext(ThemeContext);
-  const navigationState = useNavigationState(state => state);
+  const navigationState = useNavigationState((state) => state);
 
   useEffect(() => {
-    const newPhoto = navigationState.routes.find(route => route.params != null);
+    const newPhoto = navigationState.routes.find(
+      (route) => route.params != null
+    );
     if (newPhoto) {
       setPhotos([...photos, newPhoto]);
     }
   }, [navigationState]);
 
-  const onMapClose = coords => {
+  const onMapClose = (coords) => {
     if (coords) {
       setFormData({
         ...formData,
@@ -65,17 +64,24 @@ const PropertyForm = ({ navigation, route }) => {
 
   const onSavePress = async () => {
     try {
-      const saveResult = await axios.post(`${API_URL}/property/create`, formData, {
-        timeout: 5000,
-        headers: { Authorization: "Bearer " + authToken },
-      });
+      const saveResult = await axios.post(
+        `${API_URL}/property/create`,
+        formData,
+        {
+          timeout: 5000,
+          headers: { Authorization: "Bearer " + authToken },
+        }
+      );
 
       if (saveResult.data.success) {
         if (photos.length) {
-          const promises = photos.map(async photo => {
-            const base64Promise = FileSystem.readAsStringAsync(photo.params.imageUri, {
-              encoding: "base64",
-            });
+          const promises = photos.map(async (photo) => {
+            const base64Promise = FileSystem.readAsStringAsync(
+              photo.params.imageUri,
+              {
+                encoding: "base64",
+              }
+            );
 
             return base64Promise;
           });
@@ -104,7 +110,9 @@ const PropertyForm = ({ navigation, route }) => {
 
   return (
     <SafeAreaView style={styles.safeView}>
-      <View style={styles.formContents} contentContainerStyle={{ alignItems: "center" }}>
+      <ScrollView
+        contentContainerStyle={{ alignItems: "center", ...styles.formContents }}
+      >
         <View style={{ alignItems: "center" }}>
           <ScreenTitle text="Add Property" />
           <TextField
@@ -205,7 +213,7 @@ const PropertyForm = ({ navigation, route }) => {
             trackColor={{ false: "#777777", true: "#6761A8" }}
             thumbColor={formData.autoCreateListing ? "#00b4fc" : "#f4f3f4"}
             ios_backgroundColor="#3e3e3e"
-            onValueChange={value =>
+            onValueChange={(value) =>
               setFormData({ ...formData, autoCreateListing: value })
             }
             value={formData.autoCreateListing}
@@ -223,7 +231,7 @@ const PropertyForm = ({ navigation, route }) => {
         >
           <Text style={styles.saveButtonText}>Save</Text>
         </Pressable>
-      </View>
+      </ScrollView>
       <PropertyMap
         isVisible={modalVisible}
         setVisible={setModalVisible}
@@ -242,7 +250,7 @@ const TextField = ({ name, formData, setFormData, ...props }) => {
         focus == name ? { borderWidth: 2, borderColor: "#00b4fc" } : {},
       ]}
       clearButtonMode="while-editing"
-      onChangeText={value => setFormData({ ...formData, [name]: value })}
+      onChangeText={(value) => setFormData({ ...formData, [name]: value })}
       value={formData[name]}
       onFocus={() => setFocus(name)}
       onBlur={() => setFocus(false)}
