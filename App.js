@@ -45,7 +45,7 @@ const App = () => {
 
               <RootNav.Group screenOptions={{ presentation: "modal" }}>
                 <RootNav.Screen
-                  // options={{ unmountOnBlur: true }}
+                  options={{ unmountOnBlur: true }}
                   name="SignUp"
                   component={SignUp}
                 />
@@ -62,41 +62,34 @@ const App = () => {
 
 const AsyncStoreReader = ({ setIsLoggedIn }) => {
   const dispatch = useDispatch();
-  const deviceLocationPref = useSelector(
-    (state) => state.preferences?.deviceLocation
-  );
+  const deviceLocationPref = useSelector(state => state.preferences?.deviceLocation);
 
   useEffect(() => {
     //  Restore the user state if component tree is unmounted
     dispatch(getUserState())
       .unwrap()
-      .then((state) => {
+      .then(state => {
         setIsLoggedIn(Boolean(state.currentUser));
       });
 
     dispatch(getFingerprint());
     dispatch(getDeviceLocation())
       .unwrap()
-      .then((value) => {
+      .then(value => {
         (async () => {
           let { status } = await Location.requestForegroundPermissionsAsync();
 
           const isFirstTimeRequest = status === "granted" && value == null;
           const isReenabled =
-            status === "granted" &&
-            value?.deviceLocation === "denied" &&
-            value == null;
+            status === "granted" && value?.deviceLocation === "denied" && value == null;
 
           if (isFirstTimeRequest || isReenabled) {
             const currentPosition = await Location.getCurrentPositionAsync({});
             dispatch(setDeviceLocation(currentPosition));
-
-            // return currentPosition;
           }
 
           if (status == "denied") {
             dispatch(setDeviceLocation({ deviceLocation: status }));
-            //return { deviceLocation: false };
           }
         })();
       });

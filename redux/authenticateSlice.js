@@ -64,7 +64,7 @@ export const authenticateSlice = createSlice({
     authUser: null,
     authToken: "",
     loading: false,
-    isNewUser: false,
+    isNewUser: null,
     error: null,
   },
   reducers: {},

@@ -22,6 +22,7 @@ import { useSelector } from "react-redux";
 import { showToast } from "../../common/ui";
 import { screenWidth } from "../../common/values";
 import { axiosAuthInstance } from "../../common/requests";
+import TextField from "../../components/TextField";
 
 const PropertyForm = ({ navigation, route }) => {
   const [modalVisible, setModalVisible] = useState(false);
@@ -97,9 +98,9 @@ const PropertyForm = ({ navigation, route }) => {
 
   return (
     <SafeAreaView style={styles.safeView}>
+      <ScreenTitle text="Add Property" />
       <ScrollView contentContainerStyle={{ alignItems: "center" }}>
         <View style={{ alignItems: "center" }}>
-          <ScreenTitle text="Add Property" />
           <TextField
             placeholder="Title"
             name={"title"}
@@ -142,11 +143,7 @@ const PropertyForm = ({ navigation, route }) => {
               formData={formData}
               setFormData={setFormData}
               editable={false}
-              style={{
-                ...styles.textInput,
-                width: screenWidth - 80,
-                backgroundColor: "#ddd",
-              }}
+              style={styles.formatInput}
             />
 
             <PropertyActionButton
@@ -170,15 +167,7 @@ const PropertyForm = ({ navigation, route }) => {
               borderRadius: 8,
             }}
           >
-            <Text
-              style={{
-                ...styles.textInput,
-                alignItems: "center",
-                width: screenWidth - 80,
-                backgroundColor: "#ddd",
-                padding: 16,
-              }}
-            >
+            <Text style={styles.formatInput}>
               {photos.length
                 ? `${photos.length} photo${photos.length > 1 ? "s" : ""} added.`
                 : "Add Photos"}
@@ -204,43 +193,24 @@ const PropertyForm = ({ navigation, route }) => {
             value={formData.autoCreateListing}
           />
         </View>
-
-        <Pressable
-          style={({ pressed }) => [
-            {
-              backgroundColor: pressed ? colors.ACCENT : colors.THEME,
-            },
-            styles.saveButton,
-          ]}
-          onPress={() => onSavePress()}
-        >
-          <Text style={styles.saveButtonText}>Save</Text>
-        </Pressable>
       </ScrollView>
+      <Pressable
+        style={({ pressed }) => [
+          {
+            backgroundColor: pressed ? colors.ACCENT : colors.THEME,
+          },
+          styles.saveButton,
+        ]}
+        onPress={() => onSavePress()}
+      >
+        <Text style={styles.saveButtonText}>Save</Text>
+      </Pressable>
       <PropertyMap
         isVisible={modalVisible}
         setVisible={setModalVisible}
         onClose={onMapClose}
       />
     </SafeAreaView>
-  );
-};
-
-const TextField = ({ name, formData, setFormData, ...props }) => {
-  const [focus, setFocus] = useState(false);
-  return (
-    <TextInput
-      style={[
-        styles.textInput,
-        focus == name ? { borderWidth: 2, borderColor: "#00b4fc" } : {},
-      ]}
-      clearButtonMode="while-editing"
-      onChangeText={value => setFormData({ ...formData, [name]: value })}
-      value={formData[name]}
-      onFocus={() => setFocus(name)}
-      onBlur={() => setFocus(false)}
-      {...props}
-    />
   );
 };
 
@@ -276,28 +246,14 @@ const styles = StyleSheet.create({
     backgroundColor: "#eee",
   },
 
-  textInput: {
-    backgroundColor: "#fff",
+  formatInput: {
     borderWidth: 2,
     borderRadius: 8,
     borderColor: "#eee",
+    width: screenWidth - 80,
+    backgroundColor: "#ddd",
     padding: 12,
-    width: screenWidth - 20,
-    marginVertical: 8,
-  },
-  mapButton: {
-    alignItems: "center",
-    justifyContent: "center",
-    marginVertical: 10,
-    paddingVertical: 12,
-    width: "60%",
-    borderRadius: 4,
-  },
-  mapButtonText: {
-    fontSize: 16,
-    fontWeight: "bold",
-    letterSpacing: 0.5,
-    color: "white",
+    marginVertical: 6,
   },
 
   // ---
@@ -313,10 +269,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     elevation: 4,
   },
-  dashButtonText: {
-    fontSize: 12,
-    marginVertical: 2,
-  },
+
   saveButton: {
     alignItems: "center",
     justifyContent: "center",

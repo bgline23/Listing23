@@ -1,48 +1,106 @@
-import React, { useState } from "react";
-import {
-  Dimensions,
-  Modal,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import React, { useContext, useState } from "react";
+import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+
 import ScreenTitle from "../components/ScreenTitle";
-
 import { screenWidth, screenHeight } from "../common/values";
+import { ThemeContext } from "./Theme";
+import TextField from "../components/TextField";
 
-const SignUp = ({ showSignUp, setShowSignUp }) => {
+const SignUp = ({ route }) => {
+  const userType = route.params?.userType;
+  const { colors } = useContext(ThemeContext);
+
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    userName: "",
+    password: "",
+    listingLocations: "",
+    cellphone: "",
+    telephone: "",
+    agency: "",
+  });
+
   return (
     <SafeAreaView style={styles.safeView}>
       <ScreenTitle text={"Sign Up"} />
+      <ScrollView contentContainerStyle={{ alignItems: "center" }}>
+        <TextField
+          placeholder="Firstname"
+          name={"Firstname"}
+          formData={formData}
+          setFormData={setFormData}
+        />
+        <TextField
+          placeholder="Lastname"
+          name={"lastname"}
+          formData={formData}
+          setFormData={setFormData}
+        />
+        <TextField
+          placeholder="Email Address"
+          name={"email"}
+          formData={formData}
+          setFormData={setFormData}
+        />
+        <TextField
+          placeholder="Cellphone"
+          name={"cellphone"}
+          formData={formData}
+          setFormData={setFormData}
+        />
+        <TextField
+          placeholder="Username"
+          name={"username"}
+          formData={formData}
+          setFormData={setFormData}
+        />
+        <TextField
+          placeholder="Password"
+          name={"password"}
+          formData={formData}
+          setFormData={setFormData}
+          secureTextEntry
+        />
+        {userType == "agent" && (
+          <AgentFields formData={formData} setFormData={setFormData} />
+        )}
+      </ScrollView>
       <Pressable
         style={({ pressed }) => [
           {
-            backgroundColor: pressed ? "#9A96C5" : "#6761A8",
+            backgroundColor: pressed ? colors.ACCENT : colors.THEME,
           },
-          styles.signInButton,
+          styles.saveButton,
         ]}
-        onPress={_ => {
-          //navigation.navigate("SignUp");
-          setShowSignUp(true);
-        }}
+        onPress={() => onSavePress()}
       >
-        <Text style={styles.signInButtonText}>New Account</Text>
-      </Pressable>
-      <Pressable
-        style={({ pressed }) => [
-          {
-            backgroundColor: pressed ? "#9A96C5" : "#6761A8",
-          },
-          styles.signInButton,
-        ]}
-        onPress={_ => {}}
-      >
-        <Text style={styles.signInButtonText}>Browse Listings</Text>
+        <Text style={styles.saveButtonText}>Save</Text>
       </Pressable>
     </SafeAreaView>
+  );
+};
+
+const AgentFields = ({ formData, setFormData }) => {
+  return (
+    <>
+      <TextField
+        placeholder="Agency Name"
+        name={"agency"}
+        formData={formData}
+        setFormData={setFormData}
+      />
+
+      <TextField
+        placeholder="Work Telephone"
+        name={"telephone"}
+        formData={formData}
+        setFormData={setFormData}
+      />
+    </>
   );
 };
 
@@ -53,29 +111,20 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: "#eee",
   },
-  formContents: {
-    width: screenWidth - 20,
-  },
-  modalView: {
-    justifyContent: "center",
-    height: screenHeight * 0.5,
-    width: screenWidth - 20,
-    top: "50%",
-    marginHorizontal: 10,
-    borderRadius: 18,
-    paddingHorizontal: 4,
-    paddingTop: 20,
+  saveButton: {
     alignItems: "center",
-    elevation: 5,
-    shadowOffset: {
-      width: 12,
-      height: 8,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    backgroundColor: "#fff",
-    borderColor: "#6761A8",
-    borderWidth: 2,
+    justifyContent: "center",
+    marginVertical: 10,
+    paddingVertical: 12,
+    width: 140,
+    borderRadius: 4,
+    marginBottom: 40,
+  },
+  saveButtonText: {
+    fontSize: 16,
+    fontWeight: "bold",
+    letterSpacing: 0.5,
+    color: "white",
   },
 });
 

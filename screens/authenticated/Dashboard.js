@@ -1,35 +1,29 @@
-import {
-  Button,
-  Dimensions,
-  ImageBackground,
-  Pressable,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { useContext, useEffect } from "react";
+import { ImageBackground, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { CommonActions } from "@react-navigation/native";
-
 import { useSelector, useDispatch } from "react-redux";
+
 import ScreenTitle from "../../components/ScreenTitle";
 import { signOut } from "../../redux/authenticateSlice";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ThemeContext } from "../Theme";
-import { useContext } from "react";
 
 const Avatar = require("../../assets/profile.png");
 
 import { screenWidth, screenHeight } from "../../common/values";
+import IconButton from "../../components/IconButton";
 
 const Dashboard = ({ navigation }) => {
   const fingerprint = useSelector(state => state.preferences.fingerprint);
+  const user = useSelector(state => state.authenticate.authUser);
 
   const dispatch = useDispatch();
   const { colors } = useContext(ThemeContext);
 
-  const buttonColors = { pressed: colors.ACCENT, released: colors.THEME, icon: "white" };
+  useEffect(() => {
+    console.log("user ->", user);
+  }, []);
 
   const onSignOutPress = async () => {
     //  Biometrics will use the same credentials
@@ -70,9 +64,7 @@ const Dashboard = ({ navigation }) => {
             <View
               style={{
                 color: colors.SURFACE,
-                // fontSize: 18,
                 backgroundColor: colors.THEME,
-                // opacity: 0.8,
                 padding: 2,
                 alignSelf: "center",
                 borderRadius: 200,
@@ -86,34 +78,27 @@ const Dashboard = ({ navigation }) => {
       </View>
       <View style={styles.buttonGrid}>
         <View style={styles.gridRow}>
-          <DashboardButton
+          <IconButton
             label="Add Property"
             onPress={() => {
               navigation.navigate("PropertyForm");
             }}
-            colors={buttonColors}
             iconName={"home-plus-outline"}
           />
-          <DashboardButton
+          <IconButton
             label="Update Listing"
-            colors={buttonColors}
-            onPress={async () => {
-              await AsyncStorage.removeItem("preferences");
-              await AsyncStorage.removeItem("deviceLocation");
-            }}
+            onPress={() => {}}
             iconName={"newspaper-plus"}
           />
-          <DashboardButton
+          <IconButton
             label="Sign Out"
-            colors={buttonColors}
             onPress={() => onSignOutPress()}
             iconName={"logout-variant"}
           />
         </View>
         <View style={styles.gridRow}>
-          <DashboardButton
+          <IconButton
             label="Preferences"
-            colors={buttonColors}
             onPress={() => {
               navigation.navigate("Preferences");
             }}
@@ -125,60 +110,28 @@ const Dashboard = ({ navigation }) => {
   );
 };
 
-const DashboardButton = ({ label, onPress, colors, iconName }) => {
-  return (
-    <View style={styles.buttonContainer}>
-      <Pressable
-        style={({ pressed }) => [
-          {
-            backgroundColor: pressed
-              ? colors?.pressed || "green"
-              : colors?.released || "grey",
-          },
-          styles.dashButton,
-        ]}
-        onPress={() => onPress()}
-      >
-        <MaterialCommunityIcons
-          name={iconName}
-          size={32}
-          color={colors.icon || "black"}
-        />
-      </Pressable>
-      <Text style={styles.dashButtonText}>{label || "Label"}</Text>
-    </View>
-  );
-};
-
 const styles = StyleSheet.create({
   safeView: {
     flex: 1,
     alignItems: "center",
-    // justifyContent: "center",
     backgroundColor: "#eee",
   },
   banner: {
     width: screenWidth,
     height: screenHeight * 0.4,
     alignItems: "center",
-    // backgroundColor: "#fff",
     marginBottom: 10,
     padding: 8,
     justifyContent: "space-evenly",
   },
-  buttonContainer: {
-    alignItems: "center",
-    justifyContent: "center",
-  },
+
   gridRow: {
-    width: "100%",
     marginVertical: 4,
     flexDirection: "row",
     justifyContent: "space-evenly",
-    alignItems: "flex-start",
+    alignItems: "center",
   },
   buttonGrid: {
-    // alignItems: "flex-start",
     width: screenWidth - 20,
     height: screenHeight * 0.4,
     backgroundColor: "#fff",
@@ -186,18 +139,6 @@ const styles = StyleSheet.create({
 
     paddingVertical: 18,
     elevation: 4,
-  },
-  dashButton: {
-    borderRadius: 8,
-    width: 60,
-    height: 60,
-    alignItems: "center",
-    justifyContent: "center",
-    elevation: 4,
-  },
-  dashButtonText: {
-    fontSize: 12,
-    marginVertical: 2,
   },
 });
 export default Dashboard;
