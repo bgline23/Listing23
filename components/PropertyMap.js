@@ -36,6 +36,9 @@ const PropertyMap = ({ isVisible, setVisible, onClose = () => {} }) => {
             style={{ width: "90%", height: "90%" }}
             onPress={onMapPress}
             showsMyLocationButton
+            zoomTapEnabled
+            zoomControlEnabled
+            loadingEnabled
             initialRegion={{
               latitude: propertyLocation.latitude,
               longitude: propertyLocation.longitude,

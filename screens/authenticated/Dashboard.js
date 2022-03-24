@@ -21,10 +21,6 @@ const Dashboard = ({ navigation }) => {
   const dispatch = useDispatch();
   const { colors } = useContext(ThemeContext);
 
-  useEffect(() => {
-    console.log("user ->", user);
-  }, []);
-
   const onSignOutPress = async () => {
     //  Biometrics will use the same credentials
 

@@ -12,6 +12,7 @@ import { showToast } from "../common/ui";
 import { screenWidth, screenHeight } from "../common/values";
 import TextField from "../components/TextField";
 import { ThemeContext } from "./Theme";
+import Loader from "../components/Loader";
 
 const SignIn = ({ navigation }) => {
   const [credentials, setCredentials] = useState({
@@ -19,8 +20,7 @@ const SignIn = ({ navigation }) => {
     password: "",
   });
   const [optionsModal, setOptionsModal] = useState(false);
-  const { isNewUser, authToken } = useSelector(state => state.authenticate);
-  const authState = useSelector(state => state.authenticate);
+  const { authToken } = useSelector(state => state.authenticate);
   const fingerprint = useSelector(state => state.preferences.fingerprint);
   const navigationState = useNavigationState(state => state.routes);
   const dispatch = useDispatch();
@@ -86,7 +86,9 @@ const SignIn = ({ navigation }) => {
           ]}
           onPress={() => onSignInPress()}
         >
-          <Text style={styles.signInButtonText}>Sign In</Text>
+          <Loader color={colors.SURFACE}>
+            <Text style={styles.signInButtonText}>Sign In</Text>
+          </Loader>
         </Pressable>
 
         <Text onPress={() => setOptionsModal(true)} style={styles.signInOptions}>
@@ -216,9 +218,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginVertical: 10,
-    paddingVertical: 12,
+    // paddingVertical: 12,
     width: "60%",
     borderRadius: 4,
+    height: 40,
   },
   signInButtonText: {
     fontSize: 16,

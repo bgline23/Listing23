@@ -1,28 +1,48 @@
 import React, { useContext, useState } from "react";
-import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 import ScreenTitle from "../components/ScreenTitle";
-import { screenWidth, screenHeight } from "../common/values";
 import { ThemeContext } from "./Theme";
 import TextField from "../components/TextField";
+import { showToast } from "../common/ui";
 
-const SignUp = ({ route }) => {
+import { useDispatch } from "react-redux";
+import { registerUser } from "../redux/userRequest";
+
+const SignUp = ({ route, navigation }) => {
   const userType = route.params?.userType;
   const { colors } = useContext(ThemeContext);
+  const dispatch = useDispatch();
 
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
     email: "",
-    userName: "",
+    username: "",
     password: "",
-    listingLocations: "",
     cellphone: "",
     telephone: "",
     agency: "",
+    userTypeId: userType == "agent" ? 1 : 2,
   });
+
+  const onRegisterPress = () => {
+    dispatch(registerUser(formData))
+      .unwrap()
+      .then(thunkResult => {
+        if (thunkResult.username) {
+          navigation.replace("SignIn");
+          showToast("User registration successful.");
+        }
+      })
+      .catch(error => {
+        showToast(error.message, {
+          backgroundColor: colors.WARNING,
+          textColor: "black",
+        });
+      });
+  };
 
   return (
     <SafeAreaView style={styles.safeView}>
@@ -30,13 +50,13 @@ const SignUp = ({ route }) => {
       <ScrollView contentContainerStyle={{ alignItems: "center" }}>
         <TextField
           placeholder="Firstname"
-          name={"Firstname"}
+          name={"firstName"}
           formData={formData}
           setFormData={setFormData}
         />
         <TextField
           placeholder="Lastname"
-          name={"lastname"}
+          name={"lastName"}
           formData={formData}
           setFormData={setFormData}
         />
@@ -76,9 +96,9 @@ const SignUp = ({ route }) => {
           },
           styles.saveButton,
         ]}
-        onPress={() => onSavePress()}
+        onPress={() => onRegisterPress()}
       >
-        <Text style={styles.saveButtonText}>Save</Text>
+        <Text style={styles.saveButtonText}>Register</Text>
       </Pressable>
     </SafeAreaView>
   );

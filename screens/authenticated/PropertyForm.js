@@ -8,8 +8,8 @@ import {
   StyleSheet,
   Switch,
   Text,
-  TextInput,
   View,
+  ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as FileSystem from "expo-file-system";
@@ -26,7 +26,7 @@ import TextField from "../../components/TextField";
 
 const PropertyForm = ({ navigation, route }) => {
   const [modalVisible, setModalVisible] = useState(false);
-  const { authUser, authToken } = useSelector(state => state.authenticate.authUser);
+  const { user_id } = useSelector(state => state.authenticate.authUser);
   const [photos, setPhotos] = useState([]);
   const [formData, setFormData] = useState({
     title: "",
@@ -35,7 +35,7 @@ const PropertyForm = ({ navigation, route }) => {
     price: "0",
     address: "",
     autoCreateListing: true,
-    userId: authUser,
+    userId: user_id,
   });
 
   const { colors } = useContext(ThemeContext);

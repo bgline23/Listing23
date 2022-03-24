@@ -21,4 +21,24 @@ const axiosAuthInstance = axios.create(config);
   }
 })();
 
-export { axiosInstance, axiosAuthInstance };
+//  custom message for axios request error
+const interceptError =
+  func =>
+  async (...data) => {
+    try {
+      return await func(...data);
+    } catch (e) {
+      if (e.response) {
+        //  server returned an error message
+        throw new Error(e.response.data);
+      }
+
+      if (e.code) {
+        throw new Error("Could not communicate with the server at: " + API_URL);
+      }
+
+      throw new Error("Could not process request");
+    }
+  };
+
+export { axiosInstance, axiosAuthInstance, interceptError };

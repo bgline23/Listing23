@@ -41,7 +41,6 @@ const Preferences = () => {
 
   const onFingerprintChange = async isEnabled => {
     const hasBiometricsEnabled = await LocalAuthentication.isEnrolledAsync();
-    console.log("has bio->", hasBiometricsEnabled);
     if (hasBiometricsEnabled) {
       dispatch(setFingerprint({ fingerprint: isEnabled }));
     } else {
