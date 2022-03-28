@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Text, StyleSheet, View, Pressable, Dimensions, Modal } from "react-native";
+import { Text, StyleSheet, View, Pressable, Modal } from "react-native";
 import * as LocalAuthentication from "expo-local-authentication";
 import { useNavigationState } from "@react-navigation/native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 import { useSelector, useDispatch } from "react-redux";
 import { signIn } from "../redux/authenticateSlice";
@@ -10,15 +11,20 @@ import { signIn } from "../redux/authenticateSlice";
 import { showToast } from "../common/ui";
 import { screenWidth, screenHeight } from "../common/values";
 import TextField from "../components/TextField";
+import { ThemeContext } from "./Theme";
+import Loader from "../components/Loader";
 
 const SignIn = ({ navigation }) => {
-  const [credentials, setCredentials] = useState({ username: "", password: "" });
-  const [signInOptions, setSignInOptions] = useState(false);
-  const [showOptions, setShowOptions] = useState(false);
-  const { isNewUser, authToken } = useSelector(state => state.authenticate);
+  const [credentials, setCredentials] = useState({
+    username: "",
+    password: "",
+  });
+  const [optionsModal, setOptionsModal] = useState(false);
+  const { authToken } = useSelector(state => state.authenticate);
   const fingerprint = useSelector(state => state.preferences.fingerprint);
   const navigationState = useNavigationState(state => state.routes);
   const dispatch = useDispatch();
+  const { colors } = useContext(ThemeContext);
 
   useEffect(() => {
     const isSigningOut = navigationState.some(route => route.params?.isSigningOut);
@@ -40,8 +46,8 @@ const SignIn = ({ navigation }) => {
   const onSignInPress = token => {
     dispatch(signIn({ ...credentials, ...token }))
       .unwrap()
-      .then(originalPromiseResult => {
-        if (originalPromiseResult.user) {
+      .then(thunkResult => {
+        if (thunkResult.username) {
           navigation.replace("Landing");
         }
       })
@@ -52,7 +58,7 @@ const SignIn = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.safeView}>
-      <View enabled style={styles.signInSheet}>
+      <View style={styles.signInSheet}>
         <Text style={styles.formHeader}>Sign In </Text>
 
         <TextField
@@ -60,6 +66,7 @@ const SignIn = ({ navigation }) => {
           name={"username"}
           formData={credentials}
           setFormData={setCredentials}
+          fieldStyle={styles.fieldWidth}
         />
         <TextField
           placeholder="Password"
@@ -67,6 +74,7 @@ const SignIn = ({ navigation }) => {
           formData={credentials}
           setFormData={setCredentials}
           secureTextEntry
+          fieldStyle={styles.fieldWidth}
         />
         <Pressable
           style={({ pressed }) => [
@@ -74,22 +82,25 @@ const SignIn = ({ navigation }) => {
               backgroundColor: pressed ? "#79d6fa" : "#00b4fc",
             },
             styles.signInButton,
+            styles.fieldWidth,
           ]}
           onPress={() => onSignInPress()}
         >
-          <Text style={styles.signInButtonText}>Sign In</Text>
+          <Loader color={colors.SURFACE}>
+            <Text style={styles.signInButtonText}>Sign In</Text>
+          </Loader>
         </Pressable>
-        {!isNewUser && (
-          <Text onPress={() => setShowOptions(true)} style={styles.signInOptions}>
-            Sign In options.
-          </Text>
-        )}
+
+        <Text onPress={() => setOptionsModal(true)} style={styles.signInOptions}>
+          Sign In options.
+        </Text>
       </View>
+
       <Modal
         animationType="fade"
-        visible={showOptions}
+        visible={optionsModal}
         onRequestClose={() => {
-          setShowOptions(!showOptions);
+          setOptionsModal(false);
         }}
       >
         <View style={styles.centeredView}>
@@ -103,11 +114,12 @@ const SignIn = ({ navigation }) => {
                 },
                 styles.signInButton,
               ]}
-              onPress={_ => {
-                navigation.navigate("SignUp");
+              onPress={() => {
+                setOptionsModal(false);
+                navigation.navigate("SignUp", { userType: "agent" });
               }}
             >
-              <Text style={styles.signInButtonText}>New Account</Text>
+              <Text style={styles.signInButtonText}>New Agent Account</Text>
             </Pressable>
             <Pressable
               style={({ pressed }) => [
@@ -116,14 +128,41 @@ const SignIn = ({ navigation }) => {
                 },
                 styles.signInButton,
               ]}
-              onPress={_ => {
-                setShowOptions(false);
+              onPress={() => {
+                setOptionsModal(false);
+                navigation.navigate("SignUp", { userType: "buyer" });
+              }}
+            >
+              <Text style={styles.signInButtonText}>New Buyer Account</Text>
+            </Pressable>
+            <Pressable
+              style={({ pressed }) => [
+                {
+                  backgroundColor: pressed ? "#9A96C5" : "#6761A8",
+                },
+                styles.signInButton,
+              ]}
+              onPress={() => {
+                setOptionsModal(false);
                 navigation.replace("Landing");
               }}
             >
               <Text style={styles.signInButtonText}>Browse Listings</Text>
             </Pressable>
+            <Pressable
+              style={({ pressed }) => [
+                {
+                  backgroundColor: pressed
+                    ? colors?.pressed || colors.ACCENT
+                    : colors?.released || colors.THEME,
+                },
 
+                styles.buttonCancel,
+              ]}
+              onPress={() => setOptionsModal(false)}
+            >
+              <MaterialCommunityIcons name="close" size={18} color="white" />
+            </Pressable>
             {/* - - - - -  end  modal content - - - - -  */}
           </View>
         </View>
@@ -139,6 +178,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: "#eee",
   },
+
   formHeader: { marginBottom: 20, fontSize: 24, color: "#6761A8" },
   signInSheet: {
     alignItems: "center",
@@ -148,6 +188,9 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     elevation: 4,
     paddingVertical: 20,
+  },
+  fieldWidth: {
+    width: screenWidth * 0.6,
   },
   modalView: {
     justifyContent: "center",
@@ -175,9 +218,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginVertical: 10,
-    paddingVertical: 12,
+    // paddingVertical: 12,
     width: "60%",
     borderRadius: 4,
+    height: 40,
   },
   signInButtonText: {
     fontSize: 16,
@@ -187,6 +231,12 @@ const styles = StyleSheet.create({
   },
   signInOptions: {
     color: "#6761A8",
+  },
+  buttonCancel: {
+    borderRadius: 20,
+    padding: 10,
+    elevation: 2,
+    margin: 4,
   },
 });
 

@@ -1,24 +1,24 @@
-import { Dimensions, StyleSheet, Switch, Text, View } from "react-native";
+import { useEffect, useState, useContext } from "react";
+import { StyleSheet, Switch, Text, View } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
 import * as Location from "expo-location";
 import * as LocalAuthentication from "expo-local-authentication";
-import { screenWidth, screenHeight } from "../../common/values";
-import { showToast } from "../../common/ui";
 
+import { screenWidth } from "../../common/values";
+import { showToast } from "../../common/ui";
 import ScreenTitle from "../../components/ScreenTitle";
-import {
-  getDeviceLocation,
-  setDeviceLocation,
-  setFingerprint,
-} from "../../redux/preferenceSlice";
-import { useEffect, useState } from "react";
+import { setDeviceLocation, setFingerprint } from "../../redux/preferenceSlice";
+import { ThemeContext } from "../Theme";
+import IconButton from "../../components/IconButton";
 
 const Preferences = () => {
-  const fingerprint = useSelector(state => Boolean(state.preferences.fingerprint));
   const deviceLocationPref = useSelector(state => state.preferences?.deviceLocation);
   const [hasBiometric, setHasBiometric] = useState(false);
   const dispatch = useDispatch();
+  const { colors } = useContext(ThemeContext);
+  const fingerprint = useSelector(state => Boolean(state.preferences.fingerprint));
 
   const location =
     (typeof deviceLocationPref === "object" && Boolean(deviceLocationPref?.coords)) ||
@@ -27,6 +27,12 @@ const Preferences = () => {
   useEffect(() => {
     getBiometricCapability();
   }, []);
+
+  const onClearPreferences = second => {
+    AsyncStorage.getAllKeys()
+      .then(keys => AsyncStorage.multiRemove(keys))
+      .then(() => showToast("Preferences cleared"));
+  };
 
   const getBiometricCapability = async () => {
     const hasBiometricHardware = await LocalAuthentication.hasHardwareAsync();
@@ -66,10 +72,7 @@ const Preferences = () => {
         {hasBiometric && (
           <View style={styles.preferenceCard}>
             <Text style={styles.itemText}>Biometric Sign In</Text>
-            <Switch
-              trackColor={{ false: "#777777", true: "#6761A8" }}
-              thumbColor={fingerprint ? "#00b4fc" : "#f4f3f4"}
-              ios_backgroundColor="#3e3e3e"
+            <CustomSwitch
               onValueChange={value => onFingerprintChange(value)}
               value={fingerprint}
             />
@@ -77,16 +80,37 @@ const Preferences = () => {
         )}
         <View style={styles.preferenceCard}>
           <Text style={styles.itemText}>Device Location</Text>
-          <Switch
-            trackColor={{ false: "#777777", true: "#6761A8" }}
-            thumbColor={location ? "#00b4fc" : "#f4f3f4"}
-            ios_backgroundColor="#3e3e3e"
+          <CustomSwitch
             onValueChange={value => onDeviceLocationChange(value)}
             value={location}
           />
         </View>
+        <View style={[styles.preferenceCard, { bottom: 0 }]}>
+          <Text style={styles.itemText}>Clear Preferences</Text>
+          <IconButton
+            onPress={onClearPreferences}
+            colors={{
+              pressed: colors.RED,
+              released: colors.THEME,
+              icon: colors.SURFACE,
+            }}
+            iconName="trash-can-outline"
+          />
+        </View>
       </View>
     </SafeAreaView>
+  );
+};
+
+const CustomSwitch = props => {
+  const { colors } = useContext(ThemeContext);
+  return (
+    <Switch
+      trackColor={{ false: "#777777", true: colors.THEME }}
+      thumbColor={props.value ? colors.ACCENT : "#f4f3f4"}
+      ios_backgroundColor="#3e3e3e"
+      {...props}
+    />
   );
 };
 

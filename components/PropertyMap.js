@@ -1,12 +1,10 @@
 import React, { useContext, useState } from "react";
-import { Modal, StyleSheet, Pressable, View, Dimensions } from "react-native";
+import { Modal, StyleSheet, Pressable, View } from "react-native";
 import MapView, { Marker } from "react-native-maps";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useSelector } from "react-redux";
 import { ThemeContext } from "../screens/Theme";
-
-const screenWidth = Dimensions.get("window").width;
-const screenHeight = Dimensions.get("window").height;
+import { screenWidth, screenHeight } from "../common/values";
 
 const PropertyMap = ({ isVisible, setVisible, onClose = () => {} }) => {
   const deviceLocation = useSelector(state => state.preferences?.deviceLocation);
@@ -16,6 +14,10 @@ const PropertyMap = ({ isVisible, setVisible, onClose = () => {} }) => {
   });
 
   const { colors } = useContext(ThemeContext);
+
+  const onMapPress = e => {
+    setPropertyLocation(e.nativeEvent.coordinate);
+  };
 
   return (
     <Modal
@@ -32,6 +34,11 @@ const PropertyMap = ({ isVisible, setVisible, onClose = () => {} }) => {
           {/* - - - - -  modal content - - - - - */}
           <MapView
             style={{ width: "90%", height: "90%" }}
+            onPress={onMapPress}
+            showsMyLocationButton
+            zoomTapEnabled
+            zoomControlEnabled
+            loadingEnabled
             initialRegion={{
               latitude: propertyLocation.latitude,
               longitude: propertyLocation.longitude,
@@ -43,6 +50,7 @@ const PropertyMap = ({ isVisible, setVisible, onClose = () => {} }) => {
             <Marker
               key={1}
               draggable
+              tappable
               coordinate={propertyLocation}
               title={"This location"}
               description={"Property"}

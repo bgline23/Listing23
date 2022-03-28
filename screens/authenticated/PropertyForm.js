@@ -3,15 +3,13 @@ import { API_URL } from "@env";
 import axios from "axios";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import {
-  Button,
-  Dimensions,
   Pressable,
   ScrollView,
   StyleSheet,
   Switch,
   Text,
-  TextInput,
   View,
+  ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as FileSystem from "expo-file-system";
@@ -19,17 +17,16 @@ import * as FileSystem from "expo-file-system";
 import ScreenTitle from "../../components/ScreenTitle";
 import PropertyMap from "../../components/PropertyMap";
 import { ThemeContext } from "../Theme";
-import Toast from "react-native-root-toast";
 import { useNavigationState } from "@react-navigation/native";
 import { useSelector } from "react-redux";
 import { showToast } from "../../common/ui";
-
-const screenWidth = Dimensions.get("window").width;
-const screenHeight = Dimensions.get("window").height;
+import { screenWidth } from "../../common/values";
+import { axiosAuthInstance } from "../../common/requests";
+import TextField from "../../components/TextField";
 
 const PropertyForm = ({ navigation, route }) => {
   const [modalVisible, setModalVisible] = useState(false);
-  const { user, authToken } = useSelector(state => state.authenticate.authUser);
+  const { user_id } = useSelector(state => state.authenticate.authUser);
   const [photos, setPhotos] = useState([]);
   const [formData, setFormData] = useState({
     title: "",
@@ -38,7 +35,7 @@ const PropertyForm = ({ navigation, route }) => {
     price: "0",
     address: "",
     autoCreateListing: true,
-    userId: user[0].user_id,
+    userId: user_id,
   });
 
   const { colors } = useContext(ThemeContext);
@@ -65,10 +62,7 @@ const PropertyForm = ({ navigation, route }) => {
 
   const onSavePress = async () => {
     try {
-      const saveResult = await axios.post(`${API_URL}/property/create`, formData, {
-        timeout: 5000,
-        headers: { Authorization: "Bearer " + authToken },
-      });
+      const saveResult = await axiosAuthInstance.post(`/property/create`, formData);
 
       if (saveResult.data.success) {
         if (photos.length) {
@@ -104,9 +98,9 @@ const PropertyForm = ({ navigation, route }) => {
 
   return (
     <SafeAreaView style={styles.safeView}>
-      <View style={styles.formContents} contentContainerStyle={{ alignItems: "center" }}>
+      <ScreenTitle text="Add Property" />
+      <ScrollView contentContainerStyle={{ alignItems: "center" }}>
         <View style={{ alignItems: "center" }}>
-          <ScreenTitle text="Add Property" />
           <TextField
             placeholder="Title"
             name={"title"}
@@ -149,11 +143,7 @@ const PropertyForm = ({ navigation, route }) => {
               formData={formData}
               setFormData={setFormData}
               editable={false}
-              style={{
-                ...styles.textInput,
-                width: screenWidth - 80,
-                backgroundColor: "#ddd",
-              }}
+              style={styles.formatInput}
             />
 
             <PropertyActionButton
@@ -177,15 +167,7 @@ const PropertyForm = ({ navigation, route }) => {
               borderRadius: 8,
             }}
           >
-            <Text
-              style={{
-                ...styles.textInput,
-                alignItems: "center",
-                width: screenWidth - 80,
-                backgroundColor: "#ddd",
-                padding: 16,
-              }}
-            >
+            <Text style={styles.formatInput}>
               {photos.length
                 ? `${photos.length} photo${photos.length > 1 ? "s" : ""} added.`
                 : "Add Photos"}
@@ -211,43 +193,24 @@ const PropertyForm = ({ navigation, route }) => {
             value={formData.autoCreateListing}
           />
         </View>
-
-        <Pressable
-          style={({ pressed }) => [
-            {
-              backgroundColor: pressed ? colors.ACCENT : colors.THEME,
-            },
-            styles.saveButton,
-          ]}
-          onPress={() => onSavePress()}
-        >
-          <Text style={styles.saveButtonText}>Save</Text>
-        </Pressable>
-      </View>
+      </ScrollView>
+      <Pressable
+        style={({ pressed }) => [
+          {
+            backgroundColor: pressed ? colors.ACCENT : colors.THEME,
+          },
+          styles.saveButton,
+        ]}
+        onPress={() => onSavePress()}
+      >
+        <Text style={styles.saveButtonText}>Save</Text>
+      </Pressable>
       <PropertyMap
         isVisible={modalVisible}
         setVisible={setModalVisible}
         onClose={onMapClose}
       />
     </SafeAreaView>
-  );
-};
-
-const TextField = ({ name, formData, setFormData, ...props }) => {
-  const [focus, setFocus] = useState(false);
-  return (
-    <TextInput
-      style={[
-        styles.textInput,
-        focus == name ? { borderWidth: 2, borderColor: "#00b4fc" } : {},
-      ]}
-      clearButtonMode="while-editing"
-      onChangeText={value => setFormData({ ...formData, [name]: value })}
-      value={formData[name]}
-      onFocus={() => setFocus(name)}
-      onBlur={() => setFocus(false)}
-      {...props}
-    />
   );
 };
 
@@ -282,36 +245,15 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: "#eee",
   },
-  formContents: {
-    flex: 1,
-    // height: "100%",
-    justifyContent: "space-between",
-    alignItems: "center",
 
-    width: screenWidth - 20,
-  },
-  textInput: {
-    backgroundColor: "#fff",
+  formatInput: {
     borderWidth: 2,
     borderRadius: 8,
     borderColor: "#eee",
+    width: screenWidth - 80,
+    backgroundColor: "#ddd",
     padding: 12,
-    width: screenWidth - 20,
-    marginVertical: 8,
-  },
-  mapButton: {
-    alignItems: "center",
-    justifyContent: "center",
-    marginVertical: 10,
-    paddingVertical: 12,
-    width: "60%",
-    borderRadius: 4,
-  },
-  mapButtonText: {
-    fontSize: 16,
-    fontWeight: "bold",
-    letterSpacing: 0.5,
-    color: "white",
+    marginVertical: 6,
   },
 
   // ---
@@ -327,10 +269,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     elevation: 4,
   },
-  dashButtonText: {
-    fontSize: 12,
-    marginVertical: 2,
-  },
+
   saveButton: {
     alignItems: "center",
     justifyContent: "center",

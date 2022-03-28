@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { StyleSheet, TextInput } from "react-native";
+import { screenWidth } from "../common/values";
 
 const TextField = ({ name, formData, setFormData, ...props }) => {
   const [focus, setFocus] = useState(false);
@@ -8,6 +9,7 @@ const TextField = ({ name, formData, setFormData, ...props }) => {
       style={[
         styles.textInput,
         focus == name ? { borderWidth: 2, borderColor: "#00b4fc" } : {},
+        props.fieldStyle,
       ]}
       clearButtonMode="while-editing"
       onChangeText={value => setFormData({ ...formData, [name]: value })}
@@ -21,12 +23,13 @@ const TextField = ({ name, formData, setFormData, ...props }) => {
 
 const styles = StyleSheet.create({
   textInput: {
+    width: screenWidth - 20,
+    margin: 8,
+    padding: 12,
     borderWidth: 2,
     borderRadius: 8,
+    backgroundColor: "#fff",
     borderColor: "#eee",
-    padding: 12,
-    width: "60%",
-    margin: 8,
   },
 });
 

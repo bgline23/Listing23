@@ -1,15 +1,13 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { useEffect } from "react";
 import "react-native-gesture-handler";
-import { NavigationContainer, useNavigation } from "@react-navigation/native";
+import { NavigationContainer } from "@react-navigation/native";
 import * as Location from "expo-location";
 
 //  redux
 import store from "./redux/store";
-import { Provider, useSelector } from "react-redux";
-import { useDispatch } from "react-redux";
-import authenticateSlice, { getUserState } from "./redux/authenticateSlice";
+import { Provider, useSelector, useDispatch } from "react-redux";
+import { getUserState } from "./redux/authenticateSlice";
 import {
   getDeviceLocation,
   getFingerprint,
@@ -45,7 +43,7 @@ const App = () => {
 
               <RootNav.Group screenOptions={{ presentation: "modal" }}>
                 <RootNav.Screen
-                  // options={{ unmountOnBlur: true }}
+                  options={{ unmountOnBlur: true }}
                   name="SignUp"
                   component={SignUp}
                 />
@@ -75,26 +73,21 @@ const AsyncStoreReader = ({ setIsLoggedIn }) => {
     dispatch(getFingerprint());
     dispatch(getDeviceLocation())
       .unwrap()
-      .then(value => {
-        (async () => {
-          let { status } = await Location.requestForegroundPermissionsAsync();
+      .then(async value => {
+        let { status } = await Location.requestForegroundPermissionsAsync();
 
-          const isFirstTimeRequest = status === "granted" && value == null;
-          const isReenabled =
-            status === "granted" && value?.deviceLocation === "denied" && value == null;
+        const isFirstTimeRequest = status === "granted" && value == null;
+        const isReenabled =
+          status === "granted" && value?.deviceLocation === "denied" && value == null;
 
-          if (isFirstTimeRequest || isReenabled) {
-            const currentPosition = await Location.getCurrentPositionAsync({});
-            dispatch(setDeviceLocation(currentPosition));
+        if (isFirstTimeRequest || isReenabled) {
+          const currentPosition = await Location.getCurrentPositionAsync({});
+          dispatch(setDeviceLocation(currentPosition));
+        }
 
-            // return currentPosition;
-          }
-
-          if (status == "denied") {
-            dispatch(setDeviceLocation({ deviceLocation: status }));
-            //return { deviceLocation: false };
-          }
-        })();
+        if (status == "denied") {
+          dispatch(setDeviceLocation({ deviceLocation: status }));
+        }
       });
   }, []);
 
