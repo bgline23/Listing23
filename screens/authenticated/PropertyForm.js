@@ -1,4 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import { API_URL } from "@env";
 import axios from "axios";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
@@ -12,13 +13,12 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useNavigationState } from "@react-navigation/native";
 import * as FileSystem from "expo-file-system";
 
 import ScreenTitle from "../../components/ScreenTitle";
 import PropertyMap from "../../components/PropertyMap";
 import { ThemeContext } from "../Theme";
-import { useNavigationState } from "@react-navigation/native";
-import { useSelector } from "react-redux";
 import { showToast } from "../../common/ui";
 import { screenWidth } from "../../common/values";
 import { axiosAuthInstance } from "../../common/requests";

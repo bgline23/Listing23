@@ -59,8 +59,9 @@ export const authenticateSlice = createSlice({
   reducers: {},
 
   extraReducers: {
-    [signIn.pending]: (state, action) => {
+    [signIn.pending]: state => {
       state.loading = true;
+      state.error = null;
     },
     [signIn.fulfilled]: (state, action) => {
       state.authUser = action.payload;
@@ -70,11 +71,23 @@ export const authenticateSlice = createSlice({
       state.loading = false;
       state.error = action.error;
     },
+    [getUserState.pending]: state => {
+      state.loading = true;
+      state.error = null;
+    },
     [getUserState.fulfilled]: (state, { payload }) => {
       state.authUser = payload.currentUser;
       state.authToken = payload.authToken;
       state.isNewUser = payload.isNewUser;
       state.loading = false;
+    },
+    [getUserState.rejected]: (state, action) => {
+      state.loading = false;
+      state.error = action.error;
+    },
+    [signOut.pending]: state => {
+      state.loading = true;
+      state.error = null;
     },
 
     [signOut.fulfilled]: state => {
@@ -83,7 +96,7 @@ export const authenticateSlice = createSlice({
     },
 
     [signOut.rejected]: (state, action) => {
-      state.loading = "idle";
+      state.loading = "false";
       state.error = action.error;
     },
   },
