@@ -43,11 +43,11 @@ const SignIn = ({ navigation }) => {
     }
   };
 
-  const onSignInPress = token => {
+  const onSignInPress = (token = null) => {
     dispatch(signIn({ ...credentials, ...token }))
       .unwrap()
       .then(thunkResult => {
-        if (thunkResult.username) {
+        if (thunkResult.user.username) {
           navigation.replace("Landing");
         }
       })

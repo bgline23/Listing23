@@ -22,17 +22,17 @@ export const signIn = createAsyncThunk(
     let signInRequest = credentials.token
       ? await axiosInstance.post("/authenticate/loginToken", credentials)
       : await axiosInstance.post("/authenticate/login", credentials);
-
     if (signInRequest?.data.success) {
+      const token =  signInRequest.data.token 
       await AsyncStorage.setItem(
         "authToken",
-        JSON.stringify({ token: signInRequest.data.token })
+        JSON.stringify({ token })
       );
 
       await AsyncStorage.setItem("authUser", JSON.stringify(signInRequest.data.user));
       await AsyncStorage.setItem("isNewUser", "existing_user");
 
-      return signInRequest.data.user;
+      return {user: signInRequest.data.user, token} ;
     } else {
       return null;
     }
@@ -64,7 +64,9 @@ export const authenticateSlice = createSlice({
       state.error = null;
     },
     [signIn.fulfilled]: (state, action) => {
-      state.authUser = action.payload;
+   console.log('sign in ->', action)
+      state.authUser = action.payload.user;
+      state.authToken = action.payload.token;
       state.loading = false;
     },
     [signIn.rejected]: (state, action) => {

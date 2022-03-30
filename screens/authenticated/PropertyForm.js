@@ -89,7 +89,7 @@ const PropertyForm = ({ navigation, route }) => {
           }
         }
 
-        showToast("Property saved.", colors.GREEN);
+        showToast("Property saved.", {backgroundColor: colors.GREEN});
       }
     } catch (error) {
       showToast(error.message, colors.RED);
